@@ -17,7 +17,8 @@
 Adafruit_BNO055 bno1 = Adafruit_BNO055(55, 0x28);
 Adafruit_BNO055 bno2 = Adafruit_BNO055(56, 0x29);
 
-Adafruit_MPU6050 mpu;
+Adafruit_MPU6050 mpu1;
+Adafruit_MPU6050 mpu2;
 
 // arduino to mpu6050 pins (4 pins)
 // ground to ground
@@ -47,8 +48,12 @@ void setup() {
     while (1);
   }
 
-  if (!mpu.begin()) {
-    Serial.println("Initialization failed");
+  if (!mpu1.begin(0x68)) {
+    Serial.println("mpu1 Initialization failed");
+    return;
+  }
+  if (!mpu2.begin(0x69)) {
+    Serial.println("mpu2 Initialization failed");
     return;
   }
   Serial.println("Sensors is here...");
@@ -58,80 +63,106 @@ void setup() {
   bno1.setExtCrystalUse(true);  // Use external crystal for better accuracy
   bno2.setExtCrystalUse(true);
 
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
+  mpu1.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu1.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu1.setFilterBandwidth(MPU6050_BAND_5_HZ);
+
+  mpu2.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu2.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu2.setFilterBandwidth(MPU6050_BAND_5_HZ);
   Serial.println();
 
 }
 
 void loop() {
   imu::Vector<3> euler1 = bno1.getVector(Adafruit_BNO055::VECTOR_EULER);
-  imu::Vector<3> euler2 = bno2.getVector(Adafruit_BNO055::VECTOR_EULER);
 
-  Serial.print("BNO055 Sensor 1: ");
-  Serial.print("X=");
+  Serial.println("=== BNO055 Sensor 1 ===");
+  Serial.print("Euler Angles (deg) -> X: ");
   Serial.print(euler1.x());
-  Serial.print(" Y=");
+  Serial.print(" | Y: ");
   Serial.print(euler1.y());
-  Serial.print(" Z=");
+  Serial.print(" | Z: ");
   Serial.println(euler1.z());
 
-  uint8_t system1, gyro1, accel1, mag1 = 0;
+  uint8_t system1=0, gyro1=0, accel1=0, mag1=0;
   bno1.getCalibration(&system1, &gyro1, &accel1, &mag1);
-  Serial.print("CALIBRATION: Sys=");
-  Serial.print(system1, DEC);
-  Serial.print(" Gyro=");
-  Serial.print(gyro1, DEC);
-  Serial.print(" Accel=");
-  Serial.print(accel1, DEC);
-  Serial.print(" Mag=");
-  Serial.println(mag1, DEC);
+  Serial.print("Calibration -> Sys: ");
+  Serial.print(system1);
+  Serial.print(" | Gyro: ");
+  Serial.print(gyro1);
+  Serial.print(" | Accel: ");
+  Serial.print(accel1);
+  Serial.print(" | Mag: ");
+  Serial.println(mag1);
+  Serial.println();
 
-
-  Serial.print("BNO055 Sensor 2: ");
-  Serial.print("X=");
+  imu::Vector<3> euler2 = bno2.getVector(Adafruit_BNO055::VECTOR_EULER);
+  Serial.println("=== BNO055 Sensor 2 ===");
+  Serial.print("Euler Angles (deg) -> X: ");
   Serial.print(euler2.x());
-  Serial.print(" Y=");
+  Serial.print(" | Y: ");
   Serial.print(euler2.y());
-  Serial.print(" Z=");
+  Serial.print(" | Z: ");
   Serial.println(euler2.z());
 
   uint8_t system2, gyro2, accel2, mag2 = 0;
   bno2.getCalibration(&system2, &gyro2, &accel2, &mag2);
-  Serial.print("CALIBRATION: Sys=");
-  Serial.print(system2, DEC);
-  Serial.print(" Gyro=");
-  Serial.print(gyro2, DEC);
-  Serial.print(" Accel=");
-  Serial.print(accel2, DEC);
-  Serial.print(" Mag=");
-  Serial.println(mag2, DEC);
+  Serial.print("Calibration -> Sys: ");
+  Serial.print(system2);
+  Serial.print(" | Gyro: ");
+  Serial.print(gyro2);
+  Serial.print(" | Accel: ");
+  Serial.print(accel2);
+  Serial.print(" | Mag: ");
+  Serial.println(mag2);
+  Serial.println();
 
-  sensors_event_t a, g, t;
-  mpu.getEvent(&a, &g, &t);
+  sensors_event_t a1, g1, t1;
+  mpu1.getEvent(&a1, &g1, &t1);
 
-  Serial.println("MPU6050 Sensor: ");
-  Serial.print("acceleration ");
-  Serial.print(a.acceleration.x);
-  Serial.print(" ");
-  Serial.print(a.acceleration.y);
-  Serial.print(" ");
-  Serial.print(a.acceleration.z);
-  Serial.print("\n");
+  Serial.println("=== MPU6050 Sensor 1 ===");
+  Serial.print("Acceleration (m/s^2) -> X: ");
+  Serial.print(a1.acceleration.x);
+  Serial.print(" | Y: ");
+  Serial.print(a1.acceleration.y);
+  Serial.print(" | Z: ");
+  Serial.println(a1.acceleration.z);
 
-  Serial.print("gyro ");
-  Serial.print(g.gyro.x);
-  Serial.print(" ");
-  Serial.print(g.gyro.y);
-  Serial.print(" ");
-  Serial.print(g.gyro.z);
-  Serial.print("\n");
+  Serial.print("Gyro (rad/s) -> X: ");
+  Serial.print(g1.gyro.x);
+  Serial.print(" | Y: ");
+  Serial.print(g1.gyro.y);
+  Serial.print(" | Z: ");
+  Serial.println(g1.gyro.z);
 
-  Serial.print("temperature ");
-  Serial.print(t.temperature);
-  Serial.println("\n");
-  Serial.println("\n");
+  Serial.print("Temperature (°C): ");
+  Serial.println(t1.temperature);
+  Serial.println();
+
+
+  sensors_event_t a2, g2, t2;
+  mpu1.getEvent(&a2, &g2, &t2);
+  Serial.println("=== MPU6050 Sensor 2 ===");
+  Serial.print("Acceleration (m/s^2) -> X: ");
+  Serial.print(a2.acceleration.x);
+  Serial.print(" | Y: ");
+  Serial.print(a2.acceleration.y);
+  Serial.print(" | Z: ");
+  Serial.println(a2.acceleration.z);
+
+  Serial.print("Gyro (rad/s) -> X: ");
+  Serial.print(g2.gyro.x);
+  Serial.print(" | Y: ");
+  Serial.print(g2.gyro.y);
+  Serial.print(" | Z: ");
+  Serial.println(g2.gyro.z);
+
+  Serial.print("Temperature (°C): ");
+  Serial.println(t2.temperature);
+  Serial.println();
+  Serial.println("========================================\n");
+
 
   delay(1000);
 }
